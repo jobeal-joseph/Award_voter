@@ -16,7 +16,7 @@ const AwardList = () => {
       
 
       {/* Award Cards */}
-      <div className="space-y-3">
+      <div className="space-y-0">
         {awards.map((award, index) => (
           <Link 
             to={`/award/${award.id}`} 
@@ -24,16 +24,16 @@ const AwardList = () => {
             className="block group"
             style={{ animationDelay: `${index * 80}ms` }}
           >
-            <div className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-5 py-4 flex items-center justify-between transition-all duration-200 active:scale-[0.98]">
+            <div className="flex items-center px-4 py-5 border-b border-white/10 hover:bg-white/5 transition-all duration-200 active:scale-[0.99]">
+
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-white tracking-tight">
+                <h2 className="text-lg font-bold text-white tracking-tight group-hover:text-apple-blue transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
                   {award.name}
                 </h2>
-                <p className="text-sm text-white/40 mt-0.5 truncate">
-                  {award.description}
-                </p>
+               
+              
               </div>
-              <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0 ml-3" />
+              <ChevronRight className="w-5 h-5 text-white/15 group-hover:text-apple-blue group-hover:translate-x-1 transition-all flex-shrink-0 ml-3" />
             </div>
           </Link>
         ))}

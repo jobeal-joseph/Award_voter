@@ -19,10 +19,10 @@ const App = () => {
       <div className="fixed inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
-          raysColor="#0071e3"
+          raysColor="#ffffff"
           raysSpeed={0.4}
           lightSpread={1.2}
-          rayLength={2.5}
+          rayLength={3.5}
           pulsating={true}
           fadeDistance={1.2}
           saturation={0.6}
@@ -47,7 +47,7 @@ const App = () => {
         </main>
         
         <footer className="py-6 text-center text-white/30 text-xs tracking-tight">
-          <p>Copyright &copy; {new Date().getFullYear()} Golden Gala Awards. All rights reserved.</p>
+         
         </footer>
       </div>
     </div>

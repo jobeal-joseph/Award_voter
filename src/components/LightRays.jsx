@@ -32,7 +32,7 @@ const getAnchorAndDir = (origin, w, h) => {
 
 const LightRays = ({
   raysOrigin = 'top-center',
-  raysColor = DEFAULT_COLOR,
+  raysColor =  "#ffffffff",
   raysSpeed = 1,
   lightSpread = 1,
   rayLength = 2,

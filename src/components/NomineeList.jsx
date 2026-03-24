@@ -45,7 +45,7 @@ const NomineeList = () => {
       {/* Back */}
       <button 
         onClick={() => navigate('/')}
-        className="flex items-center space-x-1 text-apple-blue text-sm font-medium mb-6 active:opacity-60 transition-opacity"
+        className="flex items-center space-x-1 text-white text-sm font-medium mb-6 active:opacity-60 transition-opacity"
       >
         <ArrowLeft className="w-4 h-4" />
       </button>
