@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getAwardById, getNominees, voteForNominee, hasVoted } from '../utils/storage';
+import { getAwardById, getNominees, voteForNominee, hasVoted, subscribeToNominees } from '../utils/storage';
 import { ArrowLeft, CheckCircle2, User } from 'lucide-react';
 
 const NomineeList = () => {
@@ -11,34 +11,75 @@ const NomineeList = () => {
   const [nominees, setNominees] = useState([]);
   const [userHasVoted, setUserHasVoted] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [voting, setVoting] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [currentAward, nomineesList, voted] = await Promise.all([
+        getAwardById(id),
+        getNominees(id),
+        hasVoted(id),
+      ]);
+
+      if (!currentAward) {
+        navigate('/');
+        return;
+      }
+
+      setAward(currentAward);
+      setNominees(nomineesList);
+      setUserHasVoted(voted);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      navigate('/');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const currentAward = getAwardById(id);
-    if (!currentAward) {
-      navigate('/');
-      return;
-    }
-    setAward(currentAward);
-    setNominees(getNominees(id));
-    setUserHasVoted(hasVoted(id));
+    fetchData();
+
+    // Real-time subscription for nominee changes (votes, edits, additions)
+    const unsubscribe = subscribeToNominees(id, async () => {
+      try {
+        const updated = await getNominees(id);
+        setNominees(updated);
+      } catch (_) { /* ignore */ }
+    });
+
+    return () => unsubscribe();
   }, [id, navigate]);
 
-  const handleVote = (nomineeId) => {
-    if (userHasVoted) return;
+  const handleVote = async (nomineeId) => {
+    if (userHasVoted || voting) return;
+    setVoting(true);
 
     try {
-      voteForNominee(nomineeId, id);
-      setNominees(getNominees(id));
+      await voteForNominee(nomineeId, id);
+      const updated = await getNominees(id);
+      setNominees(updated);
       setUserHasVoted(true);
       setToastMessage('Your vote has been recorded.');
       setTimeout(() => setToastMessage(''), 3000);
     } catch (err) {
       setToastMessage(err.message || 'Something went wrong.');
       setTimeout(() => setToastMessage(''), 3000);
+    } finally {
+      setVoting(false);
     }
   };
 
-  if (!award) return <div className="text-center p-12 text-white/40">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="w-6 h-6 border-2 border-white/20 border-t-apple-blue rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!award) return null;
 
   return (
     <div className="animate-fade-in relative pb-20">
@@ -110,14 +151,16 @@ const NomineeList = () => {
               {/* Vote Button */}
               <button
                 onClick={() => handleVote(nominee.id)}
-                disabled={userHasVoted}
+                disabled={userHasVoted || voting}
                 className={`flex-shrink-0 text-sm font-semibold py-2 px-5 rounded-full transition-all duration-200 ${
                   userHasVoted 
                     ? 'bg-white/10 text-white/30 cursor-not-allowed' 
                     : 'bg-apple-blue text-white active:scale-95'
                 }`}
               >
-                {userHasVoted ? 'Voted' : 'Vote'}
+                {voting ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : userHasVoted ? 'Voted' : 'Vote'}
               </button>
             </div>
           ))}

@@ -1,151 +1,243 @@
-// Initial data seeding
-const INITIAL_AWARDS = [
-  { id: '1', name: 'Best Movie', description: 'The most outstanding film of the year.' },
-  { id: '2', name: 'Best Actor', description: 'Outstanding performance by an actor in a leading role.' },
-  { id: '3', name: 'Best Director', description: 'Outstanding achievement in directing a film.' },
-  { id: '4', name: 'Best Original Score', description: 'The best musical composition written specifically for a film.' },
-];
+import { supabase } from '../lib/supabase';
 
-// Initialize storage if empty
-export const initializeStorage = () => {
-  if (!localStorage.getItem('awards')) {
-    localStorage.setItem('awards', JSON.stringify(INITIAL_AWARDS));
+// ─── Voter fingerprint (persisted per browser) ───────────────
+const getVoterId = () => {
+  let id = localStorage.getItem('voter_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('voter_id', id);
   }
-  if (!localStorage.getItem('nominees')) {
-    localStorage.setItem('nominees', JSON.stringify([]));
-  }
-  if (!localStorage.getItem('userVotes')) {
-    localStorage.setItem('userVotes', JSON.stringify({}));
-  }
+  return id;
 };
 
-export const getAwards = () => {
-  initializeStorage();
-  return JSON.parse(localStorage.getItem('awards'));
+// ─── Awards (Categories) ─────────────────────────────────────
+
+export const getAwards = async () => {
+  const { data, error } = await supabase
+    .from('awards')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (error) throw error;
+  return data;
 };
 
-export const getAwardById = (id) => {
-  const awards = getAwards();
-  return awards.find(a => a.id === id);
+export const getAwardById = async (id) => {
+  const { data, error } = await supabase
+    .from('awards')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const addAward = (name, description) => {
-  initializeStorage();
-  const awards = JSON.parse(localStorage.getItem('awards'));
-  const newAward = {
-    id: Date.now().toString(),
-    name,
-    description: description || ''
-  };
-  awards.push(newAward);
-  localStorage.setItem('awards', JSON.stringify(awards));
-  return newAward;
+export const addAward = async (name, description) => {
+  const { data, error } = await supabase
+    .from('awards')
+    .insert({ name, description: description || '' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const updateAward = (id, updates) => {
-  initializeStorage();
-  const awards = JSON.parse(localStorage.getItem('awards'));
-  const index = awards.findIndex(a => a.id === id);
-  if (index !== -1) {
-    awards[index] = { ...awards[index], ...updates };
-    localStorage.setItem('awards', JSON.stringify(awards));
-    return awards[index];
-  }
-  return null;
+export const updateAward = async (id, updates) => {
+  const { data, error } = await supabase
+    .from('awards')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 };
 
-export const deleteAward = (id) => {
-  initializeStorage();
-  // Delete award
-  const awards = JSON.parse(localStorage.getItem('awards'));
-  const filteredAwards = awards.filter(a => a.id !== id);
-  localStorage.setItem('awards', JSON.stringify(filteredAwards));
-
-  // Cleanup nominees for this award
-  const nominees = JSON.parse(localStorage.getItem('nominees'));
-  const filteredNominees = nominees.filter(n => n.awardId !== id);
-  localStorage.setItem('nominees', JSON.stringify(filteredNominees));
-
-  // Cleanup votes for this award
-  const userVotes = JSON.parse(localStorage.getItem('userVotes'));
-  delete userVotes[id];
-  localStorage.setItem('userVotes', JSON.stringify(userVotes));
+export const deleteAward = async (id) => {
+  const { error } = await supabase
+    .from('awards')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
 };
 
-export const getNominees = (awardId) => {
-  initializeStorage();
-  const allNominees = JSON.parse(localStorage.getItem('nominees'));
+// ─── Nominees ─────────────────────────────────────────────────
+
+export const getNominees = async (awardId) => {
+  let query = supabase.from('nominees').select('*');
+
   if (awardId) {
-    return allNominees.filter(n => n.awardId === awardId);
-  }
-  return allNominees;
-};
-
-export const addNominee = (awardId, name, imageUrl) => {
-  initializeStorage();
-  const nominees = JSON.parse(localStorage.getItem('nominees'));
-  const newNominee = {
-    id: Date.now().toString(),
-    awardId,
-    name,
-    imageUrl: imageUrl || '',
-    votes: 0
-  };
-  nominees.push(newNominee);
-  localStorage.setItem('nominees', JSON.stringify(nominees));
-  return newNominee;
-};
-
-export const deleteNominee = (id) => {
-  initializeStorage();
-  const nominees = JSON.parse(localStorage.getItem('nominees'));
-  const filteredNominees = nominees.filter(n => n.id !== id);
-  localStorage.setItem('nominees', JSON.stringify(filteredNominees));
-};
-
-export const voteForNominee = (nomineeId, awardId) => {
-  initializeStorage();
-  
-  // Check if voted
-  const userVotes = JSON.parse(localStorage.getItem('userVotes'));
-  if (userVotes[awardId]) {
-    throw new Error('You have already voted for this award category.');
+    query = query.eq('award_id', awardId);
   }
 
-  // Record vote
-  const nominees = JSON.parse(localStorage.getItem('nominees'));
-  const nomineeIndex = nominees.findIndex(n => n.id === nomineeId);
-  
-  if (nomineeIndex === -1) throw new Error('Nominee not found.');
-  
-  nominees[nomineeIndex].votes += 1;
-  localStorage.setItem('nominees', JSON.stringify(nominees));
-  
-  // Save user vote status
-  userVotes[awardId] = true;
-  localStorage.setItem('userVotes', JSON.stringify(userVotes));
-  
+  query = query.order('created_at', { ascending: true });
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  // Map snake_case DB fields to camelCase for the UI
+  return data.map(n => ({
+    ...n,
+    awardId: n.award_id,
+    imageUrl: n.image_url,
+  }));
+};
+
+export const addNominee = async (awardId, name, imageUrl) => {
+  const { data, error } = await supabase
+    .from('nominees')
+    .insert({ award_id: awardId, name, image_url: imageUrl || '' })
+    .select()
+    .single();
+  if (error) throw error;
+  return { ...data, awardId: data.award_id, imageUrl: data.image_url };
+};
+
+export const updateNominee = async (id, updates) => {
+  const dbUpdates = {};
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl;
+  if (updates.image_url !== undefined) dbUpdates.image_url = updates.image_url;
+
+  const { data, error } = await supabase
+    .from('nominees')
+    .update(dbUpdates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return { ...data, awardId: data.award_id, imageUrl: data.image_url };
+};
+
+export const deleteNominee = async (id) => {
+  const { error } = await supabase
+    .from('nominees')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+};
+
+// ─── Image Upload ─────────────────────────────────────────────
+
+export const uploadNomineeImage = async (file) => {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const filePath = `nominees/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('nominee-images')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage
+    .from('nominee-images')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+};
+
+// ─── Voting ───────────────────────────────────────────────────
+
+export const voteForNominee = async (nomineeId, awardId) => {
+  const voterId = getVoterId();
+
+  const { error } = await supabase.rpc('cast_vote', {
+    p_award_id: awardId,
+    p_nominee_id: nomineeId,
+    p_voter_id: voterId,
+  });
+
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error('You have already voted for this award category.');
+    }
+    throw error;
+  }
   return true;
 };
 
-export const hasVoted = (awardId) => {
-  initializeStorage();
-  const userVotes = JSON.parse(localStorage.getItem('userVotes'));
-  return !!userVotes[awardId];
+export const hasVoted = async (awardId) => {
+  const voterId = getVoterId();
+  const { data, error } = await supabase
+    .from('votes')
+    .select('id')
+    .eq('award_id', awardId)
+    .eq('voter_id', voterId)
+    .maybeSingle();
+  if (error) throw error;
+  return !!data;
 };
 
-export const isAdminLoggedIn = () => {
-  return localStorage.getItem('adminAuth') === 'true';
+// ─── Auth ─────────────────────────────────────────────────────
+
+export const adminLogin = async (email, password) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return data;
 };
 
-export const adminLogin = (username, password) => {
-  if (username === 'admin' && password === 'admin123') {
-    localStorage.setItem('adminAuth', 'true');
-    return true;
-  }
-  return false;
+export const adminLogout = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 };
 
-export const adminLogout = () => {
-  localStorage.removeItem('adminAuth');
+export const getCurrentUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+};
+
+export const isAdminLoggedIn = async () => {
+  const user = await getCurrentUser();
+  return !!user;
+};
+
+export const onAuthStateChange = (callback) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      callback(session?.user || null);
+    }
+  );
+  return subscription;
+};
+
+// ─── Realtime subscriptions ──────────────────────────────────
+
+export const subscribeToAwards = (callback) => {
+  const channel = supabase
+    .channel('awards-realtime')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'awards' },
+      () => callback()
+    )
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+};
+
+export const subscribeToNominees = (awardId, callback) => {
+  const filter = awardId ? `award_id=eq.${awardId}` : undefined;
+  const channelName = awardId ? `nominees-realtime-${awardId}` : 'nominees-realtime-all';
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'nominees',
+        ...(filter ? { filter } : {}),
+      },
+      () => callback()
+    )
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
 };

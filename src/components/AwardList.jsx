@@ -1,20 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAwards } from '../utils/storage';
+import { getAwards, subscribeToAwards } from '../utils/storage';
 import { ChevronRight } from 'lucide-react';
 
 const AwardList = () => {
   const [awards, setAwards] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAwards = async () => {
+    try {
+      const data = await getAwards();
+      setAwards(data);
+    } catch (err) {
+      console.error('Error fetching awards:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setAwards(getAwards());
+    fetchAwards();
+    const unsubscribe = subscribeToAwards(() => fetchAwards());
+    return () => unsubscribe();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="w-6 h-6 border-2 border-white/20 border-t-apple-blue rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
-      {/* Hero */}
-      
-
       {/* Award Cards */}
       <div className="space-y-0">
         {awards.map((award, index) => (

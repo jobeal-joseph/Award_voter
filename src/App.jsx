@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AwardList from './components/AwardList';
@@ -6,11 +6,14 @@ import NomineeList from './components/NomineeList';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import LightRays from './components/LightRays';
-import { initializeStorage } from './utils/storage';
+import { onAuthStateChange } from './utils/storage';
 
 const App = () => {
+  const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in
+
   useEffect(() => {
-    initializeStorage();
+    const subscription = onAuthStateChange((u) => setUser(u));
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -35,14 +38,14 @@ const App = () => {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar user={user} />
         <main className="flex-grow max-w-5xl mx-auto px-5 py-8 w-full">
           <Routes>
             <Route path="/" element={<AwardList />} />
             <Route path="/award/:id" element={<NomineeList />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminLogin user={user} />} />
+            <Route path="/admin/login" element={<AdminLogin user={user} />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard user={user} />} />
           </Routes>
         </main>
         
