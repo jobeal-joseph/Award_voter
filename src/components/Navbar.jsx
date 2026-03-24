@@ -1,14 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, LogOut } from 'lucide-react';
-import { isAdminLoggedIn, adminLogout } from '../utils/storage';
+import { LogOut } from 'lucide-react';
+import { adminLogout } from '../utils/storage';
 
-const Navbar = () => {
+const Navbar = ({ user }) => {
   const navigate = useNavigate();
-  const isAdmin = isAdminLoggedIn();
 
-  const handleLogout = () => {
-    adminLogout();
+  const handleLogout = async () => {
+    await adminLogout();
     navigate('/');
   };
 
@@ -17,13 +16,13 @@ const Navbar = () => {
       <div className="max-w-5xl mx-auto px-5">
         <div className="flex justify-between items-center h-12">
           <Link to="/" className="flex items-center space-x-2 group">
-            <span className="text-sm font-black text-white tracking-widest uppercase" style={{ fontFamily: "'Cinzel', serif" ,fontSize: "17px"}}>
+            <span className="text-sm font-black text-white tracking-widest uppercase" style={{ fontFamily: "'Cinzel', serif", fontSize: "17px" }}>
               Award Ceremony
             </span>
           </Link>
           
           <div className="flex items-center space-x-4">
-            {isAdmin ? (
+            {user ? (
               <>
                 <Link to="/admin/dashboard" className="text-xs font-medium text-white/60 hover:text-white transition-colors">
                   Dashboard

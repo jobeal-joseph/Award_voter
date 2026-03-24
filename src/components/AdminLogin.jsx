@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../utils/storage';
 import { Lock } from 'lucide-react';
 
-const AdminLogin = () => {
-  const [username, setUsername] = useState('');
+const AdminLogin = ({ user }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (adminLogin(username, password)) {
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
       navigate('/admin/dashboard');
-    } else {
-      setError('Invalid username or password.');
+    }
+  }, [user, navigate]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await adminLogin(email, password);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid email or password.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,7 +41,7 @@ const AdminLogin = () => {
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">Admin Sign In</h2>
           <p className="text-sm text-white/40 mt-1 text-center">
-            Enter your credentials to continue.
+            Sign in with your Supabase account to continue.
           </p>
         </div>
 
@@ -40,15 +54,15 @@ const AdminLogin = () => {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1.5 ml-1">
-              Username
+              Email
             </label>
             <input
-              type="text"
+              type="email"
               className="input-field"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="admin"
+              placeholder="admin@example.com"
             />
           </div>
 
@@ -66,8 +80,16 @@ const AdminLogin = () => {
             />
           </div>
 
-          <button type="submit" className="btn-primary w-full mt-2">
-            Sign In
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full mt-2 flex items-center justify-center"
+          >
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
       </div>

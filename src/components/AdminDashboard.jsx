@@ -1,49 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  isAdminLoggedIn, getAwards, addNominee, deleteNominee, getNominees,
-  addAward, updateAward, deleteAward 
+  getAwards, getNominees,
+  addAward, updateAward, deleteAward,
+  addNominee, deleteNominee,
+  subscribeToAwards, subscribeToNominees,
 } from '../utils/storage';
 import { 
   PlusCircle, Trash2, Edit2, Check, X, 
-  Users, Award as AwardIcon, Image as ImageIcon
+  Users, Award as AwardIcon, Loader2,
 } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ user }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('awards');
   
   const [awards, setAwards] = useState([]);
   const [allNominees, setAllNominees] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   // Award Form
   const [editingAwardId, setEditingAwardId] = useState(null);
   const [awardName, setAwardName] = useState('');
   const [awardDescription, setAwardDescription] = useState('');
+  const [savingAward, setSavingAward] = useState(false);
   
   // Nominee Form
   const [selectedAward, setSelectedAward] = useState('');
   const [nomineeName, setNomineeName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [savingNominee, setSavingNominee] = useState(false);
   
   const [successMsg, setSuccessMsg] = useState('');
 
+  // ─── Auth guard ──────────────────────────────────────────
   useEffect(() => {
-    if (!isAdminLoggedIn()) {
+    if (user === null) {
       navigate('/admin/login');
-      return;
     }
-    refreshData();
-  }, [navigate]);
+  }, [user, navigate]);
 
-  const refreshData = () => {
-    const awardsList = getAwards();
-    setAwards(awardsList);
-    setAllNominees(getNominees());
-    if (awardsList.length > 0 && !selectedAward) {
-      setSelectedAward(awardsList[0].id);
+  // ─── Data fetching ───────────────────────────────────────
+  const refreshData = async () => {
+    try {
+      const [awardsList, nomineesList] = await Promise.all([
+        getAwards(),
+        getNominees(),
+      ]);
+      setAwards(awardsList);
+      setAllNominees(nomineesList);
+      if (awardsList.length > 0 && !selectedAward) {
+        setSelectedAward(awardsList[0].id);
+      }
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    refreshData();
+    const unsubAwards = subscribeToAwards(() => refreshData());
+    const unsubNominees = subscribeToNominees(null, () => refreshData());
+    return () => {
+      unsubAwards();
+      unsubNominees();
+    };
+  }, []);
 
   const showToast = (msg) => {
     setSuccessMsg(msg);
@@ -51,22 +76,27 @@ const AdminDashboard = () => {
   };
 
   // --- Award Actions ---
-  const handleAwardSubmit = (e) => {
+  const handleAwardSubmit = async (e) => {
     e.preventDefault();
     if (!awardName.trim()) return;
+    setSavingAward(true);
 
-    if (editingAwardId) {
-      updateAward(editingAwardId, { name: awardName, description: awardDescription });
-      showToast('Award updated.');
-      setEditingAwardId(null);
-    } else {
-      addAward(awardName, awardDescription);
-      showToast('Award created.');
+    try {
+      if (editingAwardId) {
+        await updateAward(editingAwardId, { name: awardName, description: awardDescription });
+        showToast('Award updated.');
+        setEditingAwardId(null);
+      } else {
+        await addAward(awardName, awardDescription);
+        showToast('Award created.');
+      }
+      setAwardName('');
+      setAwardDescription('');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      setSavingAward(false);
     }
-    
-    setAwardName('');
-    setAwardDescription('');
-    refreshData();
   };
 
   const startEditAward = (award) => {
@@ -81,33 +111,54 @@ const AdminDashboard = () => {
     setAwardDescription('');
   };
 
-  const handleDeleteAward = (id) => {
+  const handleDeleteAward = async (id) => {
     if (window.confirm('Delete this award and all its nominees?')) {
-      deleteAward(id);
-      showToast('Award deleted.');
-      refreshData();
+      try {
+        await deleteAward(id);
+        showToast('Award deleted.');
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
     }
   };
 
   // --- Nominee Actions ---
-  const handleNomineeSubmit = (e) => {
+  const handleNomineeSubmit = async (e) => {
     e.preventDefault();
     if (!selectedAward || !nomineeName.trim()) return;
+    setSavingNominee(true);
 
-    addNominee(selectedAward, nomineeName, imageUrl);
-    showToast(`${nomineeName} added.`);
-    setNomineeName('');
-    setImageUrl('');
-    refreshData();
-  };
-
-  const handleDeleteNominee = (id) => {
-    if (window.confirm('Remove this nominee?')) {
-      deleteNominee(id);
-      showToast('Nominee removed.');
-      refreshData();
+    try {
+      await addNominee(selectedAward, nomineeName, imageUrl);
+      showToast(`${nomineeName} added.`);
+      setNomineeName('');
+      setImageUrl('');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      setSavingNominee(false);
     }
   };
+
+  const handleDeleteNominee = async (id) => {
+    if (window.confirm('Remove this nominee?')) {
+      try {
+        await deleteNominee(id);
+        showToast('Nominee removed.');
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    }
+  };
+
+  // ─── Render ──────────────────────────────────────────────
+  if (user === undefined || loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="w-6 h-6 border-2 border-white/20 border-t-apple-blue rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in pb-20">
@@ -174,8 +225,12 @@ const AdminDashboard = () => {
                 placeholder="Description (optional)"
               />
               <div className="flex space-x-2">
-                <button type="submit" className="btn-primary flex-1 py-2.5">
-                  {editingAwardId ? 'Save Changes' : 'Add Award'}
+                <button type="submit" disabled={savingAward} className="btn-primary flex-1 py-2.5 flex items-center justify-center">
+                  {savingAward ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    editingAwardId ? 'Save Changes' : 'Add Award'
+                  )}
                 </button>
                 {editingAwardId && (
                   <button 
@@ -247,15 +302,19 @@ const AdminDashboard = () => {
                 placeholder="Nominee name" 
                 required 
               />
-              <input 
-                type="url" 
-                className="input-field" 
-                value={imageUrl} 
-                onChange={e => setImageUrl(e.target.value)} 
-                placeholder="Image URL (optional)" 
-              />
-              <button type="submit" className="btn-primary w-full py-2.5">
-                Add Nominee
+              <div>
+                <label className="block text-xs font-medium text-white/40 mb-1.5 ml-1">Photo (optional)</label>
+                <ImageUpload
+                  value={imageUrl}
+                  onChange={(url) => setImageUrl(url)}
+                />
+              </div>
+              <button type="submit" disabled={savingNominee} className="btn-primary w-full py-2.5 flex items-center justify-center">
+                {savingNominee ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Add Nominee'
+                )}
               </button>
             </form>
           </div>
@@ -275,13 +334,13 @@ const AdminDashboard = () => {
                       {nominee.imageUrl ? (
                         <img src={nominee.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <ImageIcon className="w-5 h-5 text-white/30" />
+                        <Users className="w-5 h-5 text-white/30" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-white truncate">{nominee.name}</h3>
                       <p className="text-xs text-apple-blue truncate">
-                        {award ? award.name : 'Unknown'}
+                        {award ? award.name : 'Unknown'} · {nominee.votes} {nominee.votes === 1 ? 'vote' : 'votes'}
                       </p>
                     </div>
                     <button 
