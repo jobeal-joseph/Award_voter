@@ -159,7 +159,7 @@ const AdminDashboard = ({ user }) => {
   if (user === undefined || loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-apple-blue rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-gold-300/20 border-t-gold-300 rounded-full animate-spin" />
       </div>
     );
   }
@@ -167,18 +167,18 @@ const AdminDashboard = ({ user }) => {
   return (
     <div className="max-w-2xl mx-auto animate-fade-in pb-20">
       {/* Header */}
-      <h1 className="text-2xl font-bold tracking-tight text-white mb-6">
+      <h1 className="text-2xl font-bold tracking-tight text-gold-100 mb-6">
         Admin Dashboard
       </h1>
 
       {/* Segmented Control */}
-      <div className="flex p-1 bg-white/5 rounded-xl mb-6 border border-white/10">
+      <div className="flex p-1 bg-gold-300/5 rounded-xl mb-6 border border-gold-300/10">
         <button 
           onClick={() => setActiveTab('awards')}
           className={`flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'awards' 
-              ? 'bg-white/15 text-white shadow-sm' 
-              : 'text-white/40'
+              ? 'bg-gold-300/15 text-gold-100 shadow-sm' 
+              : 'text-gold-300/40'
           }`}
         >
           <AwardIcon className="w-4 h-4" />
@@ -188,8 +188,8 @@ const AdminDashboard = ({ user }) => {
           onClick={() => setActiveTab('nominees')}
           className={`flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'nominees' 
-              ? 'bg-white/15 text-white shadow-sm' 
-              : 'text-white/40'
+              ? 'bg-gold-300/15 text-gold-100 shadow-sm' 
+              : 'text-gold-300/40'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -199,8 +199,8 @@ const AdminDashboard = ({ user }) => {
           onClick={() => setActiveTab('votes')}
           className={`flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'votes' 
-              ? 'bg-white/15 text-white shadow-sm' 
-              : 'text-white/40'
+              ? 'bg-gold-300/15 text-gold-100 shadow-sm' 
+              : 'text-gold-300/40'
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -220,8 +220,8 @@ const AdminDashboard = ({ user }) => {
       {activeTab === 'awards' && (
         <div className="space-y-6">
           {/* Form */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-white mb-4">
+          <div className="bg-gold-300/5 border border-gold-300/10 rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-gold-100 mb-4">
               {editingAwardId ? 'Edit Award' : 'New Award'}
             </h2>
             <form onSubmit={handleAwardSubmit} className="space-y-3">
@@ -263,26 +263,26 @@ const AdminDashboard = ({ user }) => {
           {/* List */}
           <div className="space-y-2">
             {awards.length === 0 ? (
-              <div className="text-center py-16 text-white/30 text-sm">
+              <div className="text-center py-16 text-gold-300/30 text-sm">
                 No awards created yet.
               </div>
             ) : (
               awards.map(award => (
-                <div key={award.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between group">
+                <div key={award.id} className="bg-gold-300/5 border border-gold-300/10 rounded-xl px-4 py-3 flex items-center justify-between group">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-white truncate">{award.name}</h3>
-                    <p className="text-xs text-white/30 truncate mt-0.5">{award.description}</p>
+                    <h3 className="text-sm font-semibold text-gold-100 truncate">{award.name}</h3>
+                    <p className="text-xs text-gold-300/30 truncate mt-0.5">{award.description}</p>
                   </div>
                   <div className="flex space-x-1 ml-3">
                     <button 
                       onClick={() => startEditAward(award)}
-                      className="p-2 text-white/30 hover:text-apple-blue rounded-lg transition-colors"
+                      className="p-2 text-gold-300/30 hover:text-gold-300 rounded-lg transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDeleteAward(award.id)}
-                      className="p-2 text-white/30 hover:text-red-400 rounded-lg transition-colors"
+                      className="p-2 text-gold-300/30 hover:text-red-400 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -298,8 +298,8 @@ const AdminDashboard = ({ user }) => {
       {activeTab === 'nominees' && (
         <div className="space-y-6">
           {/* Form */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-white mb-4">Add Nominee</h2>
+          <div className="bg-gold-300/5 border border-gold-300/10 rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-gold-100 mb-4">Add Nominee</h2>
             <form onSubmit={handleNomineeSubmit} className="space-y-3">
               <select 
                 className="input-field appearance-none" 
@@ -318,7 +318,7 @@ const AdminDashboard = ({ user }) => {
                 required 
               />
               <div>
-                <label className="block text-xs font-medium text-white/40 mb-1.5 ml-1">Photo (optional)</label>
+                <label className="block text-xs font-medium text-gold-300/40 mb-1.5 ml-1">Photo (optional)</label>
                 <ImageUpload
                   value={imageUrl}
                   onChange={(url) => setImageUrl(url)}
@@ -337,30 +337,30 @@ const AdminDashboard = ({ user }) => {
           {/* List */}
           <div className="space-y-2">
             {allNominees.length === 0 ? (
-              <div className="text-center py-16 text-white/30 text-sm">
+              <div className="text-center py-16 text-gold-300/30 text-sm">
                 No nominees added yet.
               </div>
             ) : (
               allNominees.map(nominee => {
                 const award = awards.find(a => a.id === nominee.awardId);
                 return (
-                  <div key={nominee.id} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center space-x-3 group">
-                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div key={nominee.id} className="bg-gold-300/5 border border-gold-300/10 rounded-xl px-4 py-3 flex items-center space-x-3 group">
+                    <div className="w-10 h-10 rounded-lg bg-gold-300/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {nominee.imageUrl ? (
                         <img src={nominee.imageUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Users className="w-5 h-5 text-white/30" />
+                        <Users className="w-5 h-5 text-gold-300/30" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-white truncate">{nominee.name}</h3>
-                      <p className="text-xs text-apple-blue truncate">
+                      <h3 className="text-sm font-semibold text-gold-100 truncate">{nominee.name}</h3>
+                      <p className="text-xs text-gold-300 truncate">
                         {award ? award.name : 'Unknown'} · {nominee.votes} {nominee.votes === 1 ? 'vote' : 'votes'}
                       </p>
                     </div>
                     <button 
                       onClick={() => handleDeleteNominee(nominee.id)}
-                      className="p-2 text-white/20 hover:text-red-400 rounded-lg transition-colors"
+                      className="p-2 text-gold-300/20 hover:text-red-400 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -376,23 +376,23 @@ const AdminDashboard = ({ user }) => {
       {activeTab === 'votes' && (
         <div className="space-y-4">
           {votesSummary.length === 0 ? (
-            <div className="text-center py-16 text-white/30 text-sm">
+            <div className="text-center py-16 text-gold-300/30 text-sm">
               No votes recorded yet.
             </div>
           ) : (
             votesSummary.map(award => (
-              <div key={award.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div key={award.id} className="bg-gold-300/5 border border-gold-300/10 rounded-2xl overflow-hidden">
                 {/* Award Header */}
-                <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white">{award.name}</h3>
-                  <span className="text-xs font-medium text-apple-blue bg-apple-blue/10 px-2.5 py-1 rounded-full">
+                <div className="px-5 py-3 border-b border-gold-300/10 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gold-100">{award.name}</h3>
+                  <span className="text-xs font-medium text-gold-300 bg-gold-300/10 px-2.5 py-1 rounded-full">
                     {award.totalVotes} {award.totalVotes === 1 ? 'vote' : 'votes'}
                   </span>
                 </div>
 
                 {/* Nominees ranked by votes */}
                 {award.nominees.length === 0 ? (
-                  <div className="px-5 py-4 text-xs text-white/30">No nominees</div>
+                  <div className="px-5 py-4 text-xs text-gold-300/30">No nominees</div>
                 ) : (
                   <div className="divide-y divide-white/5">
                     {award.nominees.map((nominee, idx) => {
@@ -402,12 +402,12 @@ const AdminDashboard = ({ user }) => {
                         <div key={nominee.id} className="px-5 py-3 flex items-center space-x-3 relative overflow-hidden">
                           {/* Progress bar background */}
                           <div
-                            className="absolute inset-y-0 left-0 bg-apple-blue/10 transition-all duration-500"
+                            className="absolute inset-y-0 left-0 bg-gold-300/10 transition-all duration-500"
                             style={{ width: `${pct}%` }}
                           />
-                          <span className="relative text-xs font-bold text-white/40 w-5 text-center">{idx + 1}</span>
-                          <span className="relative flex-1 text-sm font-medium text-white truncate">{nominee.name}</span>
-                          <span className="relative text-sm font-bold text-white tabular-nums">
+                          <span className="relative text-xs font-bold text-gold-300/40 w-5 text-center">{idx + 1}</span>
+                          <span className="relative flex-1 text-sm font-medium text-gold-100 truncate">{nominee.name}</span>
+                          <span className="relative text-sm font-bold text-gold-100 tabular-nums">
                             {nominee.votes || 0}
                           </span>
                         </div>

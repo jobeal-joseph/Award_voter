@@ -8,8 +8,8 @@ module.exports = {
     extend: {
       colors: {
         apple: {
-          blue: '#0071e3',
-          blueHover: '#0077ED',
+          blue: '#4A90D9',
+          blueHover: '#5BA0E9',
           gray: {
             50: '#fbfbfd',
             100: '#f5f5f7',
@@ -21,6 +21,21 @@ module.exports = {
             700: '#333336',
             800: '#1d1d1f',
           }
+        },
+        chrome: {
+          900: '#0c203dff',
+          800: '#0d1f3c',
+          700: '#132d54',
+          600: '#1a3a6b',
+        },
+        gold: {
+          50: '#fdf8e8',
+          100: '#f5e6b8',
+          200: '#e8cc6e',
+          300: '#d4af37',
+          400: '#c9a027',
+          500: '#b8912a',
+          600: '#9a7a24',
         }
       },
       fontFamily: {

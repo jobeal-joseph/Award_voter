@@ -17,12 +17,12 @@ const App = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-black relative">
+    <div className="min-h-screen flex flex-col bg-chrome-900 relative">
       {/* LightRays Background */}
       <div className="fixed inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
-          raysColor="#ffffff"
+          raysColor="#d4af37"
           raysSpeed={0.4}
           lightSpread={1.2}
           rayLength={3.5}

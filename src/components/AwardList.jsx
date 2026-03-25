@@ -27,7 +27,7 @@ const AwardList = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-apple-blue rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-gold-300/20 border-t-gold-300 rounded-full animate-spin" />
       </div>
     );
   }
@@ -43,16 +43,16 @@ const AwardList = () => {
             className="block group"
             style={{ animationDelay: `${index * 80}ms` }}
           >
-            <div className="flex items-center px-4 py-5 border-b border-white/10 hover:bg-white/5 transition-all duration-200 active:scale-[0.99]">
+            <div className="flex items-center px-4 py-5 border-b border-gold-300/10 hover:bg-gold-300/5 transition-all duration-200 active:scale-[0.99]">
 
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-white tracking-tight group-hover:text-apple-blue transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                <h2 className="text-lg font-bold text-white tracking-tight group-hover:text-gold-300 transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
                   {award.name}
                 </h2>
                
               
               </div>
-              <ChevronRight className="w-5 h-5 text-white/15 group-hover:text-apple-blue group-hover:translate-x-1 transition-all flex-shrink-0 ml-3" />
+              <ChevronRight className="w-5 h-5 text-gold-300/20 group-hover:text-gold-300 group-hover:translate-x-1 transition-all flex-shrink-0 ml-3" />
             </div>
           </Link>
         ))}

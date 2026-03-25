@@ -36,11 +36,11 @@ const AdminLogin = ({ user }) => {
     <div className="min-h-[70vh] flex items-center justify-center animate-fade-in px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-white/60" />
+          <div className="w-14 h-14 bg-gold-300/10 rounded-full flex items-center justify-center mb-4">
+            <Lock className="w-6 h-6 text-gold-300/60" />
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Admin Sign In</h2>
-          <p className="text-sm text-white/40 mt-1 text-center">
+          <h2 className="text-xl font-bold text-gold-100 tracking-tight">Admin Sign In</h2>
+          <p className="text-sm text-gold-300/40 mt-1 text-center">
             Sign in with your Supabase account to continue.
           </p>
         </div>
@@ -53,7 +53,7 @@ const AdminLogin = ({ user }) => {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1.5 ml-1">
+            <label className="block text-xs font-medium text-gold-300/50 mb-1.5 ml-1">
               Email
             </label>
             <input
@@ -67,7 +67,7 @@ const AdminLogin = ({ user }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1.5 ml-1">
+            <label className="block text-xs font-medium text-gold-300/50 mb-1.5 ml-1">
               Password
             </label>
             <input
@@ -86,7 +86,7 @@ const AdminLogin = ({ user }) => {
             className="btn-primary w-full mt-2 flex items-center justify-center"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-chrome-900/30 border-t-chrome-900 rounded-full animate-spin" />
             ) : (
               'Sign In'
             )}
