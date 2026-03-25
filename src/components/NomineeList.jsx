@@ -10,6 +10,7 @@ const NomineeList = () => {
   const [award, setAward] = useState(null);
   const [nominees, setNominees] = useState([]);
   const [userHasVoted, setUserHasVoted] = useState(false);
+  const [votedNomineeId, setVotedNomineeId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -30,6 +31,10 @@ const NomineeList = () => {
       setAward(currentAward);
       setNominees(nomineesList);
       setUserHasVoted(voted);
+
+      // Restore which nominee was voted for
+      const savedVotedId = localStorage.getItem(`voted_nominee_${id}`);
+      if (savedVotedId) setVotedNomineeId(savedVotedId);
     } catch (err) {
       console.error('Error loading data:', err);
       navigate('/');
@@ -61,6 +66,8 @@ const NomineeList = () => {
       const updated = await getNominees(id);
       setNominees(updated);
       setUserHasVoted(true);
+      setVotedNomineeId(nomineeId);
+      localStorage.setItem(`voted_nominee_${id}`, nomineeId);
       setToastMessage('Your vote has been recorded.');
       setTimeout(() => setToastMessage(''), 3000);
     } catch (err) {
@@ -100,8 +107,8 @@ const NomineeList = () => {
         
         {userHasVoted && (
           <div className="mt-4 flex items-center space-x-2 text-emerald-400 text-sm font-medium">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>You've voted in this category</span>
+           
+            
           </div>
         )}
       </div>
@@ -135,20 +142,23 @@ const NomineeList = () => {
             
               </div>
 
-              {/* Vote Button */}
-              <button
-                onClick={() => handleVote(nominee.id)}
-                disabled={userHasVoted || voting}
-                className={`flex-shrink-0 text-sm font-semibold py-2 px-5 rounded-full transition-all duration-200 ${
-                  userHasVoted 
-                    ? 'bg-gold-300/10 text-gold-300/30 cursor-not-allowed' 
-                    : 'bg-gold-300 text-chrome-900 active:scale-95'
-                }`}
-              >
-                {voting ? (
-                  <div className="w-4 h-4 border-2 border-chrome-900/30 border-t-chrome-900 rounded-full animate-spin" />
-                ) : userHasVoted ? 'Voted' : 'Vote'}
-              </button>
+              {/* Vote Button — only show if not voted, or if this is the voted nominee */}
+              {!userHasVoted ? (
+                <button
+                  onClick={() => handleVote(nominee.id)}
+                  disabled={voting}
+                  className="flex-shrink-0 text-sm font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-gold-300 text-chrome-900 active:scale-95"
+                >
+                  {voting ? (
+                    <div className="w-4 h-4 border-2 border-chrome-900/30 border-t-chrome-900 rounded-full animate-spin" />
+                  ) : 'Vote'}
+                </button>
+              ) : votedNomineeId === nominee.id ? (
+                <span className="flex-shrink-0 flex items-center space-x-1 text-sm font-semibold text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Voted</span>
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
