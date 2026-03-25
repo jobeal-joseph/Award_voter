@@ -5,10 +5,11 @@ import {
   addAward, updateAward, deleteAward,
   addNominee, deleteNominee,
   subscribeToAwards, subscribeToNominees,
+  getVotesSummary,
 } from '../utils/storage';
 import { 
   PlusCircle, Trash2, Edit2, Check, X, 
-  Users, Award as AwardIcon, Loader2,
+  Users, Award as AwardIcon, Loader2, BarChart3,
 } from 'lucide-react';
 import ImageUpload from './ImageUpload';
 
@@ -18,6 +19,7 @@ const AdminDashboard = ({ user }) => {
   
   const [awards, setAwards] = useState([]);
   const [allNominees, setAllNominees] = useState([]);
+  const [votesSummary, setVotesSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Award Form
@@ -44,12 +46,14 @@ const AdminDashboard = ({ user }) => {
   // ─── Data fetching ───────────────────────────────────────
   const refreshData = async () => {
     try {
-      const [awardsList, nomineesList] = await Promise.all([
+      const [awardsList, nomineesList, votesData] = await Promise.all([
         getAwards(),
         getNominees(),
+        getVotesSummary(),
       ]);
       setAwards(awardsList);
       setAllNominees(nomineesList);
+      setVotesSummary(votesData);
       if (awardsList.length > 0 && !selectedAward) {
         setSelectedAward(awardsList[0].id);
       }
@@ -190,6 +194,17 @@ const AdminDashboard = ({ user }) => {
         >
           <Users className="w-4 h-4" />
           <span>Nominees</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('votes')}
+          className={`flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'votes' 
+              ? 'bg-white/15 text-white shadow-sm' 
+              : 'text-white/40'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>Votes</span>
         </button>
       </div>
 
@@ -354,6 +369,55 @@ const AdminDashboard = ({ user }) => {
               })
             )}
           </div>
+        </div>
+      )}
+
+      {/* Votes Tab */}
+      {activeTab === 'votes' && (
+        <div className="space-y-4">
+          {votesSummary.length === 0 ? (
+            <div className="text-center py-16 text-white/30 text-sm">
+              No votes recorded yet.
+            </div>
+          ) : (
+            votesSummary.map(award => (
+              <div key={award.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                {/* Award Header */}
+                <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white">{award.name}</h3>
+                  <span className="text-xs font-medium text-apple-blue bg-apple-blue/10 px-2.5 py-1 rounded-full">
+                    {award.totalVotes} {award.totalVotes === 1 ? 'vote' : 'votes'}
+                  </span>
+                </div>
+
+                {/* Nominees ranked by votes */}
+                {award.nominees.length === 0 ? (
+                  <div className="px-5 py-4 text-xs text-white/30">No nominees</div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {award.nominees.map((nominee, idx) => {
+                      const maxVotes = award.nominees[0]?.votes || 1;
+                      const pct = maxVotes > 0 ? ((nominee.votes || 0) / maxVotes) * 100 : 0;
+                      return (
+                        <div key={nominee.id} className="px-5 py-3 flex items-center space-x-3 relative overflow-hidden">
+                          {/* Progress bar background */}
+                          <div
+                            className="absolute inset-y-0 left-0 bg-apple-blue/10 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                          <span className="relative text-xs font-bold text-white/40 w-5 text-center">{idx + 1}</span>
+                          <span className="relative flex-1 text-sm font-medium text-white truncate">{nominee.name}</span>
+                          <span className="relative text-sm font-bold text-white tabular-nums">
+                            {nominee.votes || 0}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>

@@ -206,6 +206,42 @@ export const onAuthStateChange = (callback) => {
   return subscription;
 };
 
+// ─── Votes Overview (Admin) ──────────────────────────────────
+
+export const getVotesOverview = async () => {
+  const { data, error } = await supabase
+    .from('votes')
+    .select('id, created_at, voter_id, award_id, nominee_id, nominees(name), awards(name)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  return data.map(v => ({
+    id: v.id,
+    voterIdShort: v.voter_id ? v.voter_id.slice(0, 8) : '—',
+    nomineeName: v.nominees?.name || 'Unknown',
+    awardName: v.awards?.name || 'Unknown',
+    createdAt: v.created_at,
+  }));
+};
+
+export const getVotesSummary = async () => {
+  // Get all nominees with their vote counts grouped by award
+  const [awards, nominees] = await Promise.all([
+    getAwards(),
+    getNominees(),
+  ]);
+
+  return awards.map(award => ({
+    ...award,
+    nominees: nominees
+      .filter(n => n.awardId === award.id)
+      .sort((a, b) => (b.votes || 0) - (a.votes || 0)),
+    totalVotes: nominees
+      .filter(n => n.awardId === award.id)
+      .reduce((sum, n) => sum + (n.votes || 0), 0),
+  }));
+};
+
 // ─── Realtime subscriptions ──────────────────────────────────
 
 export const subscribeToAwards = (callback) => {

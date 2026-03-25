@@ -118,7 +118,7 @@ const NomineeList = () => {
       {nominees.length === 0 ? (
         <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
           <p className="text-white/50 font-medium">No nominees yet.</p>
-          <p className="text-xs text-white/30 mt-1">Check back when nominees are announced.</p>
+          
         </div>
       ) : (
         <div className="space-y-3">
@@ -128,24 +128,12 @@ const NomineeList = () => {
               className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center space-x-4"
             >
               {/* Avatar */}
-              <div className="w-14 h-14 rounded-xl bg-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                {nominee.imageUrl ? (
-                  <img 
-                    src={nominee.imageUrl} 
-                    alt={nominee.name} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-7 h-7 text-white/30" />
-                )}
-              </div>
+             
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold text-white truncate">{nominee.name}</h3>
-                <p className="text-xs text-white/40 mt-0.5">
-                  {nominee.votes} {nominee.votes === 1 ? 'vote' : 'votes'}
-                </p>
+            
               </div>
 
               {/* Vote Button */}
